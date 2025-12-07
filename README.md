@@ -40,6 +40,16 @@ Testprogramm für Downsampling-Funktionen und mathematische Operationen für Neu
 make run-nnmath
 ```
 
+### 4. ForestEnvironment
+
+Test der Spielwelt mit allen 5 Layouts.
+
+**Ausführung:**
+
+```bash
+make run-env
+```
+
 ## Build-System
 
 ### Linux/macOS (mit Make)
@@ -67,19 +77,24 @@ make help
 **Kompilieren:**
 
 ```powershell
-javac -d build/classes -encoding ISO-8859-1 *.java
+# Build-Verzeichnis erstellen
+New-Item -ItemType Directory -Force -Path build\classes
+
+# Alle Java-Dateien kompilieren
+javac -d build/classes -sourcepath src -encoding UTF-8 (Get-ChildItem -Path src -Recurse -Filter *.java | ForEach-Object { $_.FullName })
 ```
 
 **Ausführen:**
 
 ```powershell
-cd build/classes
+# Q-Learning mit Neural Network
+java -cp build/classes learning.QLearningGrid_NN
 
-# Neural Network Version
-java QLearningGrid_NN
+# Q-Learning mit Tabelle
+java -cp build/classes learning.QLearningGrid_Table
 
-# Tabellen Version
-java QLearningGrid_Table
+# ForestEnvironment Test
+java -cp build/classes environment.ForestEnvironment
 ```
 
 ## Anforderungen
@@ -91,20 +106,46 @@ java QLearningGrid_Table
 ## Projektstruktur
 
 ```
-DRE/
-├── FFN.java                    # Feed Forward Network Implementierung
-├── HeatmapVisualizer.java      # GUI für Visualisierung der Q-Werte
-├── LossFunction.java           # Interface für Loss Functions
-├── MeanSquaredError.java       # MSE Loss Function
-├── NNMath.java                 # Mathematische Hilfsfunktionen
-├── QLearningGrid_NN.java       # Q-Learning mit Neural Network
-├── QLearningGrid_Table.java    # Q-Learning mit Tabelle
-├── Makefile                    # Build-System
-├── run-ql-nn.sh               # Ausführungsskript für NN-Version
-├── run-ql-table.sh            # Ausführungsskript für Table-Version
-├── run-nnmath.sh              # Ausführungsskript für NNMath
-└── README.md                  # Diese Datei
+├── src/
+│   ├── environment/                # Spielwelt
+│   │   ├── ForestConstants.java    # Konstanten (Zelltypen, Aktionen, Rewards)
+│   │   ├── StepResult.java         # Ergebnis-Record für step()
+│   │   ├── FireSpreadManager.java  # Dynamische Feuerausbreitung
+│   │   └── ForestEnvironment.java  # Hauptklasse der Spielwelt
+│   ├── layouts/                    # Map-Layouts
+│   │   ├── Layout.java             # Interface für Layouts
+│   │   ├── SimpleEscapeLayout.java # Layout 1: Einfache Flucht
+│   │   ├── NarrowPassLayout.java   # Layout 2: Enger Durchgang
+│   │   ├── WaterRefugeLayout.java  # Layout 3: Wasserrefugium
+│   │   ├── LabyrinthLayout.java    # Layout 4: Labyrinth
+│   │   └── InfernoLayout.java      # Layout 5: Inferno (schwer)
+│   ├── nn/                         # Neural Network
+│   │   ├── FFN.java                # Feed Forward Network
+│   │   ├── LossFunction.java       # Interface für Loss Functions
+│   │   ├── MeanSquaredError.java   # MSE Loss Function
+│   │   └── NNMath.java             # Mathematische Hilfsfunktionen
+│   ├── learning/                   # Q-Learning Algorithmen
+│   │   ├── QLearningGrid_NN.java   # Q-Learning mit Neural Network
+│   │   └── QLearningGrid_Table.java# Q-Learning mit Tabelle
+│   └── visualization/              # GUI
+│       └── HeatmapVisualizer.java  # Heatmap für Q-Werte
+├── build/                          # Kompilierte Klassen
+├── Makefile                        # Build-System
+├── run-ql-nn.sh                    # Ausführungsskript für NN-Version
+├── run-ql-table.sh                 # Ausführungsskript für Table-Version
+├── run-nnmath.sh                   # Ausführungsskript für NNMath
+└── README.md                       # Diese Datei
 ```
+
+## Packages
+
+| Package         | Beschreibung                   |
+| --------------- | ------------------------------ |
+| `environment`   | Spielwelt und Konstanten       |
+| `layouts`       | 5 vordefinierte Map-Layouts    |
+| `nn`            | Neural Network Implementierung |
+| `learning`      | Q-Learning Algorithmen         |
+| `visualization` | GUI für Heatmap-Visualisierung |
 
 ## Hinweise
 
