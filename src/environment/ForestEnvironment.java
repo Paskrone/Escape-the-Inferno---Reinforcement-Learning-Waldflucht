@@ -93,6 +93,7 @@ public class ForestEnvironment {
      */
     public static Layout getLayoutByNumber(int number) {
         return switch (number) {
+            case 0 -> new TutorialLayout();       // Einfachstes Layout für Q-Tabelle
             case 1 -> new SimpleEscapeLayout();
             case 2 -> new NarrowPassLayout();
             case 3 -> new WaterRefugeLayout();
@@ -516,7 +517,7 @@ public class ForestEnvironment {
         System.out.println("=== ForestEnvironment Test ===\n");
         
         // Test alle Layouts
-        for (int i = 1; i <= 5; i++) {
+        for (int i = 0; i <= 5; i++) {
             Layout layout = getLayoutByNumber(i);
             System.out.println("Layout " + i + " - " + layout.getName() + ":");
             ForestEnvironment env = new ForestEnvironment(layout);
