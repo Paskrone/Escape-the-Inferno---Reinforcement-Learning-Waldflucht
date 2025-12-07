@@ -5,9 +5,11 @@ Dieses Projekt enthält Java-Implementierungen von Q-Learning Algorithmen für G
 ## Programme
 
 ### 1. QLearningGrid_Table
+
 Q-Learning mit Tabellen-basierter Q-Funktion (klassische Methode).
 
 **Ausführung:**
+
 ```bash
 ./run-ql-table.sh
 # oder
@@ -15,9 +17,11 @@ make run-table
 ```
 
 ### 2. QLearningGrid_NN
+
 Q-Learning mit Neural Network (Feed Forward Network) als Funktionsapproximator.
 
 **Ausführung:**
+
 ```bash
 ./run-ql-nn.sh
 # oder
@@ -25,9 +29,11 @@ make run-nn
 ```
 
 ### 3. NNMath
+
 Testprogramm für Downsampling-Funktionen und mathematische Operationen für Neural Networks.
 
 **Ausführung:**
+
 ```bash
 ./run-nnmath.sh
 # oder
@@ -36,26 +42,51 @@ make run-nnmath
 
 ## Build-System
 
-### Kompilierung
+### Linux/macOS (mit Make)
+
+**Kompilierung:**
+
 ```bash
 make all
 ```
 
-### Aufräumen
+**Aufräumen:**
+
 ```bash
 make clean
 ```
 
-### Hilfe
+**Hilfe:**
+
 ```bash
 make help
+```
+
+### Windows (PowerShell)
+
+**Kompilieren:**
+
+```powershell
+javac -d build/classes -encoding ISO-8859-1 *.java
+```
+
+**Ausführen:**
+
+```powershell
+cd build/classes
+
+# Neural Network Version
+java QLearningGrid_NN
+
+# Tabellen Version
+java QLearningGrid_Table
 ```
 
 ## Anforderungen
 
 - Java 21 oder höher
-- Make (für Build-System)
-- Bash (für Skripte)
+- Make (für Build-System, optional unter Windows)
+- Bash (für Skripte, optional unter Windows)
 
 ## Projektstruktur
 
