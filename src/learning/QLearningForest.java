@@ -105,7 +105,7 @@ public class QLearningForest {
                 
                 heatmap.update(Q);
                 recentEscapes = 0;
-                Thread.sleep(50);  // Kurze Pause für Visualisierung
+                Thread.sleep(100);  // Pause für Visualisierung (halbe Geschwindigkeit)
             }
         }
         
@@ -281,6 +281,7 @@ public class QLearningForest {
             case 3 -> new WaterRefugeLayout();
             case 4 -> new LabyrinthLayout();
             case 5 -> new InfernoLayout();
+            case 6 -> new DemoLayout();           // Großes Demo-Layout (20x20)
             default -> {
                 System.out.println("Layout " + number + " existiert nicht, verwende Tutorial");
                 yield new TutorialLayout();

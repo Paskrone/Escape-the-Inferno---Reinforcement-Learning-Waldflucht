@@ -99,6 +99,7 @@ public class ForestEnvironment {
             case 3 -> new WaterRefugeLayout();
             case 4 -> new LabyrinthLayout();
             case 5 -> new InfernoLayout();
+            case 6 -> new DemoLayout();           // Großes Demo-Layout (20x20)
             default -> new SimpleEscapeLayout();
         };
     }

@@ -41,6 +41,7 @@ public class QLearningForest_NN {
     private LossFunction lossFunction;
     private NNHeatmapVisualizer heatmap;
     private double epsilon;
+    private int[][] lastEpisodeGrid;  // Grid am Ende der letzten Episode (mit ausgebreitetem Feuer)
 
     // Netzwerk-Architektur
     private static final int INPUT_SIZE = 8;   // Extended State: x, y, exitDist, fireDist, 4x fireDirection
@@ -56,6 +57,11 @@ public class QLearningForest_NN {
         this.epsilon = EPSILON_START;
         this.lossFunction = new MeanSquaredError();
         
+        // Dynamisches Feuer - MODERATE Einstellungen
+        env.setDynamicFireEnabled(true);
+        env.setFireSpreadProbability(0.08);  // 8% pro Nachbar
+        env.setFireSpreadInterval(5);        // Alle 5 Schritte prüfen
+        
         // Neural Network initialisieren
         int[] layerSizes = {INPUT_SIZE, HIDDEN_SIZE, HIDDEN_SIZE, OUTPUT_SIZE};
         this.network = new FFN(layerSizes, "relu", "none", 32);
@@ -64,6 +70,13 @@ public class QLearningForest_NN {
         System.out.println("  Input:  " + INPUT_SIZE + " (Extended State)");
         System.out.println("  Hidden: " + HIDDEN_SIZE + " x 2 (ReLU)");
         System.out.println("  Output: " + OUTPUT_SIZE + " (Q-Werte für Aktionen)");
+        if (env.isDynamicFireEnabled()) {
+            System.out.printf("  🔥 Dynamisches Feuer: AKTIV (%.0f%% Spread, alle %d Schritte)%n",
+                    env.getFireManager().getSpreadProbability() * 100,
+                    env.getFireManager().getSpreadInterval());
+        } else {
+            System.out.println("  🔥 Dynamisches Feuer: DEAKTIVIERT");
+        }
     }
 
     /**
@@ -105,6 +118,9 @@ public class QLearningForest_NN {
                 updateNetwork(state, action, reward, nextState, done);
             }
             
+            // Grid am Ende der Episode speichern (zeigt ausgebreitetes Feuer)
+            lastEpisodeGrid = copyGrid(env.getGrid());
+            
             if (env.hasEscaped()) {
                 escapeCount++;
                 recentEscapes++;
@@ -126,10 +142,15 @@ public class QLearningForest_NN {
                 System.out.printf("Episode %5d | Gesamt: %5.1f%% | Letzte %3d: %5.1f%% %s | ε=%.3f%n",
                         ep, totalRate, interval, recentRate, status, epsilon);
                 
+                // Grid-Typen aktualisieren (zeigt Feuer am Ende der letzten Episode)
+                if (lastEpisodeGrid != null) {
+                    heatmap.setGridTypes(lastEpisodeGrid);
+                }
+                
                 // Heatmap aus NN-Predictions berechnen
                 heatmap.update(computeQFromNetwork());
                 recentEscapes = 0;
-                Thread.sleep(50);  // Kurze Pause für Visualisierung
+                Thread.sleep(100);  // Pause für Visualisierung (halbe Geschwindigkeit)
             }
         }
         
@@ -305,6 +326,17 @@ public class QLearningForest_NN {
     }
 
     /**
+     * Kopiert ein 2D-Array (Grid)
+     */
+    private int[][] copyGrid(int[][] source) {
+        int[][] copy = new int[source.length][];
+        for (int i = 0; i < source.length; i++) {
+            copy[i] = source[i].clone();
+        }
+        return copy;
+    }
+
+    /**
      * Testet die gelernte Policy (greedy, ohne Exploration)
      */
     public void testGreedy() {
@@ -405,6 +437,7 @@ public class QLearningForest_NN {
             case 3 -> new WaterRefugeLayout();
             case 4 -> new LabyrinthLayout();
             case 5 -> new InfernoLayout();
+            case 6 -> new DemoLayout();           // Großes Demo-Layout (20x20)
             default -> {
                 System.out.println("Layout " + number + " existiert nicht, verwende Tutorial");
                 yield new TutorialLayout();
