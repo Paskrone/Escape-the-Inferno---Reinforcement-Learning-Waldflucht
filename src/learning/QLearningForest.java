@@ -3,6 +3,8 @@ package learning;
 import environment.*;
 import layouts.*;
 import visualization.HeatmapVisualizer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Q-Learning mit ForestEnvironment
@@ -19,6 +21,10 @@ public class QLearningForest {
     private static final double GAMMA   = 0.95;   // Discount-Faktor
     private static final double EPSILON = 0.1;    // Exploration (10%)
     private static final int EPISODES   = 5000;   // Trainings-Episoden
+
+    // Heatmap-Update-Intervalle (häufiger am Anfang, seltener später)
+    private static final int[] HEATMAP_INTERVALS = {10, 50, 100, 200};  // Update alle X Episoden
+    private static final int[] INTERVAL_THRESHOLDS = {100, 500, 2000};  // Ab Episode X nächstes Intervall
 
     // =====================================================
     //                  INSTANZVARIABLEN
@@ -41,9 +47,8 @@ public class QLearningForest {
      * Trainiert den Agenten mit Q-Learning
      */
     public void train() throws InterruptedException {
-        // Heatmap für Visualisierung initialisieren
-        heatmap = new HeatmapVisualizer(env.getWidth(), env.getHeight(), 
-                                         findExitX(), findExitY());
+        // Heatmap für Visualisierung initialisieren (mit allen Exits)
+        heatmap = new HeatmapVisualizer(env.getWidth(), env.getHeight(), findAllExits());
         
         int escapeCount = 0;
         int recentEscapes = 0;
@@ -85,21 +90,22 @@ public class QLearningForest {
                 recentEscapes++;
             }
             
-            // Fortschritt alle 100 Episoden anzeigen
-            if (ep % 100 == 0) {
+            // Dynamisches Heatmap-Update-Intervall
+            int interval = getHeatmapInterval(ep);
+            if (ep % interval == 0) {
                 double totalRate = (escapeCount / (double) ep) * 100;
-                double recentRate = recentEscapes;  // von 100
                 
-                String status = recentRate >= 90 ? "🔥" : 
-                               recentRate >= 70 ? "✓" : 
-                               recentRate >= 50 ? "~" : "✗";
+                String status = recentEscapes >= interval * 0.9 ? "🔥" : 
+                               recentEscapes >= interval * 0.7 ? "✓" : 
+                               recentEscapes >= interval * 0.5 ? "~" : "✗";
                 
-                System.out.printf("Episode %5d | Gesamt: %5.1f%% | Letzte 100: %3.0f%% %s%n",
-                        ep, totalRate, recentRate, status);
+                double recentRate = (recentEscapes / (double) interval) * 100;
+                System.out.printf("Episode %5d | Gesamt: %5.1f%% | Letzte %3d: %5.1f%% %s%n",
+                        ep, totalRate, interval, recentRate, status);
                 
                 heatmap.update(Q);
                 recentEscapes = 0;
-                Thread.sleep(10);
+                Thread.sleep(50);  // Kurze Pause für Visualisierung
             }
         }
         
@@ -150,31 +156,32 @@ public class QLearningForest {
     }
 
     /**
-     * Findet die X-Position des Exits (für Heatmap)
+     * Findet alle Exit-Positionen (für Heatmap)
      */
-    private int findExitX() {
+    private List<int[]> findAllExits() {
+        List<int[]> exits = new ArrayList<>();
         for (int x = 0; x < env.getWidth(); x++) {
             for (int y = 0; y < env.getHeight(); y++) {
                 if (env.getCellType(x, y) == ForestConstants.EXIT) {
-                    return x;
+                    exits.add(new int[]{x, y});
                 }
             }
         }
-        return env.getWidth() - 1;  // Fallback
+        return exits;
     }
 
     /**
-     * Findet die Y-Position des Exits (für Heatmap)
+     * Bestimmt das Heatmap-Update-Intervall basierend auf der Episode
+     * Frühe Episoden: häufigere Updates (alle 10)
+     * Späte Episoden: seltenere Updates (alle 200)
      */
-    private int findExitY() {
-        for (int x = 0; x < env.getWidth(); x++) {
-            for (int y = 0; y < env.getHeight(); y++) {
-                if (env.getCellType(x, y) == ForestConstants.EXIT) {
-                    return y;
-                }
+    private int getHeatmapInterval(int episode) {
+        for (int i = 0; i < INTERVAL_THRESHOLDS.length; i++) {
+            if (episode <= INTERVAL_THRESHOLDS[i]) {
+                return HEATMAP_INTERVALS[i];
             }
         }
-        return 0;  // Fallback
+        return HEATMAP_INTERVALS[HEATMAP_INTERVALS.length - 1];
     }
 
     /**
