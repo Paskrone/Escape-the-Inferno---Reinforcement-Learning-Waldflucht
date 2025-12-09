@@ -30,11 +30,11 @@ public class SimpleEscapeLayout implements Layout {
         grid[0][9] = ForestConstants.EXIT;
         grid[9][9] = ForestConstants.EXIT;
         
-        // Feuer in der Mitte
+        // Feuer in der Mitte, aber Startzelle (5,5) bleibt frei
         grid[4][4] = ForestConstants.FIRE;
         grid[5][4] = ForestConstants.FIRE;
         grid[4][5] = ForestConstants.FIRE;
-        grid[5][5] = ForestConstants.FIRE;
+        grid[6][4] = ForestConstants.FIRE;
         
         return grid;
     }
